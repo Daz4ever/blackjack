@@ -37,24 +37,24 @@ Hand.prototype.addCard = function(card) {
 // myHand.addCard(myCard);
 
 Hand.prototype.calculatePoints = function () {
-  //copyHand is a copy of my hand so that I don't rearrange the order of my real hand
-  //in the game
-  var copyHand = this.hand.slice(0);
-  sortedCopyHand = copyHand.sort(function compare(a, b) {
-    return a.point - b.point;
-  });
-  console.log(copyHand);
-  return this.hand.reduce(function add(sum, card) {
-    var point = card.point;
-    if (point > 10) {
-      point = 10;
-    }
-    var testSum = sum + point;
-    if (point === 1 && testSum < 12) {
-     point = 11;
-    }
-    return sum + point;
-  }, 0);
+  var total = 0,
+     aces = 0;
+ for (var i = 0; i < this.hand.length; i++) {
+   var point = this.hand[i].point;
+   if (point === 1) {
+     total += 10;
+     aces++;
+   }
+   else if (point > 10) {
+     point = 10;
+   }
+   total += point;
+   while (total > 21 && aces > 0) {
+     total -= 10;
+     aces--;
+   }
+ }
+ return total;
 
 };
 
@@ -102,18 +102,20 @@ Deck.prototype.numCardsLeft = function() {
 
 /////-------------------------------
 
-var myDeck = new Deck(6);
+var myDeck = new Deck(2);
 myDeck.shuffle();
 playerHand = new Hand();
 dealerHand = new Hand();
 
 $(document).ready(function() {
   $('#hit-button').attr("disabled", true);
+  $("#stand-button").attr("disabled", true);
   var dealerPoints = [];
   var playerPoints = [];
 
   $("#deal-button").click(function() {
       $(this).attr("disabled", true);
+      $("#stand-button").attr("disabled", false);
       $('#hit-button').attr("disabled", false);
       var card1 = myDeck.drawCard();
       var card2 = myDeck.drawCard();
@@ -135,8 +137,8 @@ $(document).ready(function() {
       if(currPlayerPoints === 21) {
         $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
         $('#dealer-points').text(currDealerPoints);
-        if ((currPlayerPoints > currDealerPoints) && (currPlayerPoints <= 21)) {
-          $('#messages').text("You Win!");
+        if (currPlayerPoints > currDealerPoints) {
+          $('#messages').text("$ Blackjack, You Win! $").css("color", "gold");
         }
         else if(currDealerPoints === currPlayerPoints) {
         $('#messages').text("Push!");
@@ -147,31 +149,36 @@ $(document).ready(function() {
 
   });
 
-//   function calculatePoints(cards) {
-//   var sum2Cards = cards.map(function(card) {
-//     if (card.point === 11 || card.point === 12 || card.point === 13) {
-//       card.point = 10;
-//     }
-//     return card.point
-//   }).reduce(function(a, b) {
-//     return a + b;
-//   });
-//   return sum2Cards;
-// }
-
 
   $("#hit-button").click(function() {
     var card1 = myDeck.drawCard();
     playerHand.addCard(card1);
     $("#player-hand").append('<img class="card" src="' + card1.getImageUrl()+'">');
       var currPlayerPoints = playerHand.calculatePoints();
+      var currDealerPoints = dealerHand.calculatePoints();
       $('#player-points').text(currPlayerPoints);
       if (currPlayerPoints > 21) {
         $("#messages").text("YOU BUSTED!");
       }
+      if(currPlayerPoints === 21) {
+        console.log("hello");
+        $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
+        $('#dealer-points').text(currDealerPoints);
+        if (currPlayerPoints > currDealerPoints) {
+          $('#messages').text("21, You Win!");
+        }
+        else if(currDealerPoints === currPlayerPoints) {
+        $('#messages').text("Push!");
+        }
+      }
+
+
+
   });
 
   $("#stand-button").click(function() {
+    $(this).attr("disabled", true);
+    $('#hit-button').attr("disabled", true);
     $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
     var card2 = myDeck.drawCard();
 
@@ -193,7 +200,7 @@ $(document).ready(function() {
           $('#messages').text("Dealer Busted!");
         }
     }
-    $('#dealer-points').text(dealerHand.calculatePoints());
+    $('#dealer-points').text(currDealerPoints);
     if ((currPlayerPoints > currDealerPoints) && (currPlayerPoints <= 21)) {
       $('#messages').text("You Win!");
     }
@@ -207,6 +214,7 @@ $(document).ready(function() {
 
   $("#reset-button").click(function() {
     $("#deal-button").attr("disabled", false);
+    $("#stand-button").attr("disabled", true);
     $("#player-hand").empty();
     $("#dealer-hand").empty();
     $('#player-points').text("");
