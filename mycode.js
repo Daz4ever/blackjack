@@ -37,23 +37,30 @@ Hand.prototype.addCard = function(card) {
 // myHand.addCard(myCard);
 
 Hand.prototype.calculatePoints = function () {
+  //copyHand is a copy of my hand so that I don't rearrange the order of my real hand
+  //in the game
+  var copyHand = this.hand.slice(0);
+  sortedCopyHand = copyHand.sort(function compare(a, b) {
+    return a.point - b.point;
+  });
+  console.log(copyHand);
   return this.hand.reduce(function add(sum, card) {
     var point = card.point;
     if (point > 10) {
       point = 10;
     }
     var testSum = sum + point;
-    if (point === 1 && testSum < 11) {
+    if (point === 1 && testSum < 12) {
      point = 11;
     }
     return sum + point;
   }, 0);
+
 };
 
 
 function Deck(n) {
   this.deck = [];
-  this.usedCards = [];
   for(var j = 0; j < n; j++ ) {
     for (var i = 1; i < 14; i++ ) {
       this.deck.push(new Card(i,'spades'));
@@ -65,9 +72,7 @@ function Deck(n) {
 }
 
 Deck.prototype.drawCard = function() {
-  var card = this.deck.pop();
-  this.usedCards.push(card);
-  return card;
+  return this.deck.pop();
 };
 
 Deck.prototype.shuffle = function() {
@@ -97,31 +102,47 @@ Deck.prototype.numCardsLeft = function() {
 
 /////-------------------------------
 
-var usedCards = [];
 var myDeck = new Deck(6);
 myDeck.shuffle();
 playerHand = new Hand();
 dealerHand = new Hand();
 
 $(document).ready(function() {
-
+  $('#hit-button').attr("disabled", true);
   var dealerPoints = [];
   var playerPoints = [];
-  var usedCards = [];
 
   $("#deal-button").click(function() {
-    for(var i=1; i < 3; i++) {
+      $(this).attr("disabled", true);
+      $('#hit-button').attr("disabled", false);
       var card1 = myDeck.drawCard();
       var card2 = myDeck.drawCard();
       playerHand.addCard(card1);
       dealerHand.addCard(card2);
       $("#player-hand").append('<img class="card" src="' + card1.getImageUrl()+'">');
+      $("#dealer-hand").append('<img class="card hiddencard" src="images/cardback.jpg">');
+
+       card1 = myDeck.drawCard();
+       card2 = myDeck.drawCard();
+      playerHand.addCard(card1);
+      dealerHand.addCard(card2);
+      $("#player-hand").append('<img class="card" src="' + card1.getImageUrl()+'">');
       $("#dealer-hand").append('<img class="card" src="' + card2.getImageUrl()+'">');
 
+      $('#player-points').text(playerHand.calculatePoints());
+      currPlayerPoints = playerHand.calculatePoints();
+      currDealerPoints = dealerHand.calculatePoints();
+      if(currPlayerPoints === 21) {
+        $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
+        $('#dealer-points').text(currDealerPoints);
+        if ((currPlayerPoints > currDealerPoints) && (currPlayerPoints <= 21)) {
+          $('#messages').text("You Win!");
+        }
+        else if(currDealerPoints === currPlayerPoints) {
+        $('#messages').text("Push!");
+        }
+      }
 
-    }
-  $('#dealer-points').text(dealerHand.calculatePoints());
-  $('#player-points').text(playerHand.calculatePoints());
 
 
   });
@@ -151,6 +172,7 @@ $(document).ready(function() {
   });
 
   $("#stand-button").click(function() {
+    $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
     var card2 = myDeck.drawCard();
 
     var currDealerPoints = dealerHand.calculatePoints();
@@ -171,6 +193,7 @@ $(document).ready(function() {
           $('#messages').text("Dealer Busted!");
         }
     }
+    $('#dealer-points').text(dealerHand.calculatePoints());
     if ((currPlayerPoints > currDealerPoints) && (currPlayerPoints <= 21)) {
       $('#messages').text("You Win!");
     }
@@ -183,6 +206,7 @@ $(document).ready(function() {
   });
 
   $("#reset-button").click(function() {
+    $("#deal-button").attr("disabled", false);
     $("#player-hand").empty();
     $("#dealer-hand").empty();
     $('#player-points').text("");
