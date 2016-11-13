@@ -102,7 +102,7 @@ Deck.prototype.numCardsLeft = function() {
 
 /////-------------------------------
 
-var myDeck = new Deck(2);
+var myDeck = new Deck(6);
 myDeck.shuffle();
 playerHand = new Hand();
 dealerHand = new Hand();
@@ -141,7 +141,7 @@ $(document).ready(function() {
           $('#messages').text("$ Blackjack, You Win! $").css("color", "gold");
         }
         else if(currDealerPoints === currPlayerPoints) {
-        $('#messages').text("Push!");
+        $('#messages').text("Push!").css('color', 'white');
         }
       }
 
@@ -165,10 +165,10 @@ $(document).ready(function() {
         $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
         $('#dealer-points').text(currDealerPoints);
         if (currPlayerPoints > currDealerPoints) {
-          $('#messages').text("21, You Win!");
+          $('#messages').text("21, You Win!").css('color', 'white');
         }
         else if(currDealerPoints === currPlayerPoints) {
-        $('#messages').text("Push!");
+        $('#messages').text("Push!").css('color', 'white');
         }
       }
 
@@ -180,11 +180,12 @@ $(document).ready(function() {
     $(this).attr("disabled", true);
     $('#hit-button').attr("disabled", true);
     $(".hiddencard").attr("src", dealerHand.hand[0].getImageUrl());
-    var card2 = myDeck.drawCard();
+
 
     var currDealerPoints = dealerHand.calculatePoints();
     var currPlayerPoints = playerHand.calculatePoints();
     while (currDealerPoints < 17) {
+      var card2 = myDeck.drawCard();
       dealerHand.addCard(card2);
       $("#dealer-hand").append('<img class="card" src="' + card2.getImageUrl()+'">');
       currDealerPoints += card2.point;
@@ -192,29 +193,30 @@ $(document).ready(function() {
       if ((currDealerPoints > currPlayerPoints) && (currDealerPoints <= 21)) {
         // console.log(currDealerPoints);
         // console.log(currPlayerPoints);
-        $('#messages').text("Dealer Wins!");
+        $('#messages').text("Dealer Wins!").css('color', 'white');
       } else if ((currPlayerPoints > currDealerPoints) && (currPlayerPoints <= 21)) {
-        $('#messages').text("You Win!");
+        $('#messages').text("You Win!").css('color', 'white');
       }
         else if(currDealerPoints > 21) {
-          $('#messages').text("Dealer Busted!");
+          $('#messages').text("Dealer Busted!").css('color', 'white');
         }
     }
     $('#dealer-points').text(currDealerPoints);
     if ((currPlayerPoints > currDealerPoints) && (currPlayerPoints <= 21)) {
-      $('#messages').text("You Win!");
+      $('#messages').text("You Win!").css('color', 'white');
     }
     if ((currDealerPoints > currPlayerPoints) && (currDealerPoints <= 21)) {
-      $('#messages').text("Dealer Wins!");
+      $('#messages').text("Dealer Wins!").css('color', 'white');
     }
     if(currDealerPoints === currPlayerPoints) {
-    $('#messages').text("Push!");
+    $('#messages').text("Push!").css('color', 'white');
     }
   });
 
   $("#reset-button").click(function() {
     $("#deal-button").attr("disabled", false);
     $("#stand-button").attr("disabled", true);
+    $('#hit-button').attr("disabled", true);
     $("#player-hand").empty();
     $("#dealer-hand").empty();
     $('#player-points').text("");
